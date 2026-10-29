@@ -1,0 +1,14 @@
+.env
+.env
+.venv/
+.pytest_cache/
+.pytest-tmp*/
+.pytest*/
+.test-tmp*/
+.superpowers/
+__pycache__/
+*.pyc
+*.egg-info/
+data/
+outputs/
+tools/*.exe

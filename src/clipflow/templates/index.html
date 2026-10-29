@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ClipFlow AI</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/app.css?v=20260901-video-upload">
+</head>
+<body class="creator-theme">
+  <a class="skip" href="#workspace">본문 바로가기</a>
+  <header class="creator-appbar">
+    <a class="brand" href="/?ui=creator2" aria-label="ClipFlow AI 처음으로">
+      <span class="brand-mark" aria-hidden="true">▶</span>
+      <span><strong>ClipFlow AI</strong><small>Higgsfield 릴스 스튜디오</small></span>
+    </a>
+    <div class="connection-list" aria-label="서비스 연결 상태">
+      <div id="higgsfieldCredit" class="connection-chip" data-state="loading" role="status"><span>HF</span><b id="higgsfieldCreditValue">확인 중</b></div>
+      <div id="metaConnection" class="connection-chip" data-state="loading" role="status"><span>IG</span><b id="metaConnectionValue">확인 중</b></div>
+      <div class="connection-chip" data-state="{% if offline %}demo{% else %}connected{% endif %}"><span>AI</span><b>{% if offline %}데모 문구{% else %}{{ ai_provider }} 연결 모드{% endif %}</b></div>
+    </div>
+  </header>
+
+  <main id="workspace" class="workspace">
+    <section class="workspace-head">
+      <div>
+        <p class="eyebrow">DIRECT VIDEO STUDIO</p>
+        <h1>프롬프트 한 번으로<br><span>영상부터 게시까지.</span></h1>
+        <p>힉스필드에서 쓰던 프롬프트와 설정을 그대로 사용하고, 결과 설명과 해시태그만 자동으로 준비합니다.</p>
+      </div>
+      <div class="project-tools" aria-label="프로젝트 관리">
+        <label for="projectSelect">현재 프로젝트</label>
+        <div>
+          <select id="projectSelect" aria-label="프로젝트 선택"><option value="">불러오는 중…</option></select>
+          <button id="loadProjectButton" type="button">불러오기</button>
+          <button id="newProjectButton" type="button">새 프로젝트</button>
+          <button id="deleteProjectButton" class="danger" type="button">삭제</button>
+        </div>
+      </div>
+    </section>
+
+    <div id="status" class="status" role="status" aria-live="polite">준비하고 있습니다.</div>
+
+    <section class="direct-studio" aria-label="릴스 직접 생성 스튜디오">
+      <article class="creation-panel panel-card">
+        <div class="section-title"><span>01 · CREATE</span><h2>릴스 영상 준비하기</h2><p>힉스필드로 새로 만들거나, 완성된 내 영상을 올려 분석할 수 있습니다.</p></div>
+
+        <div class="source-mode" role="tablist" aria-label="영상 준비 방식">
+          <button id="sourceModeHiggsfield" class="source-mode-button active" type="button" role="tab" aria-selected="true" aria-controls="higgsfieldSourcePane">힉스필드로 생성</button>
+          <button id="sourceModeUpload" class="source-mode-button" type="button" role="tab" aria-selected="false" aria-controls="uploadSourcePane">내 영상 업로드</button>
+        </div>
+
+        <div id="higgsfieldSourcePane" role="tabpanel" aria-labelledby="sourceModeHiggsfield">
+
+        <section class="reference-box" aria-labelledby="referenceTitle">
+          <div><h3 id="referenceTitle">캐릭터 기준 이미지</h3><p id="videoProfileReferenceStatus">저장된 이미지를 확인하고 있습니다.</p></div>
+          <div class="reference-actions">
+            <label class="file-button">이미지 선택<input id="videoProfileReferenceFile" type="file" accept="image/png,image/jpeg,image/webp"></label>
+            <button id="uploadVideoProfileReferenceButton" type="button">기준 이미지 저장</button>
+          </div>
+          <img id="videoProfileReferencePreview" alt="저장된 캐릭터 기준 이미지" hidden>
+          <label class="check-row"><input id="useProfileReference" type="checkbox" checked> 이 이미지를 영상 시작 이미지로 사용</label>
+        </section>
+
+        <div class="setting-grid">
+          <label>모델<select id="videoModel"><option value="seedance_2_0" selected>Seedance 2.0</option></select></label>
+          <label>길이<select id="videoDuration"><option value="8" selected>8초</option><option value="5">5초</option></select></label>
+          <label>화면 비율<select id="videoAspectRatio"><option value="auto" selected>자동</option><option value="9:16">9:16 세로</option><option value="16:9">16:9 가로</option></select></label>
+          <label>해상도<select id="videoResolution"><option value="720p" selected>720p</option><option value="1080p">1080p</option></select></label>
+          <label>비트레이트<select id="videoBitrateMode"><option value="high" selected>높음</option><option value="standard">표준</option></select></label>
+          <label class="audio-option"><span>영상 음향</span><span class="toggle"><input id="videoGenerateAudio" type="checkbox" checked><i></i></span><small>대사·효과음·배경음 생성 요청</small></label>
+        </div>
+
+        <label class="prompt-field" for="aiPrompt"><span>영상 프롬프트</span><textarea id="aiPrompt" rows="13" maxlength="5000" placeholder="예: 검은색 시바견 줄라이가 면접장 문을 열고 들어간다. 긴장해서 꼬리를 빠르게 흔들며 한국어로 ‘안녕하세요, 줄라이입니다!’라고 말한다. 밝고 경쾌한 배경음, 현실적인 움직임, 세로형 숏폼 카메라."></textarea></label>
+        <input id="startAsset" type="hidden">
+
+        <div id="costResult" class="cost-result" aria-live="polite">생성 전 비용을 먼저 확인해 주세요. 설정에 따라 5초 또는 8초 영상이 생성됩니다.</div>
+        <div class="main-actions"><button id="costButton" type="button">생성 비용 확인</button><button id="generateVideoButton" class="primary" type="button" disabled>비용 동의 후 영상 생성</button></div>
+        </div>
+
+        <div id="uploadSourcePane" class="upload-source-pane" role="tabpanel" aria-labelledby="sourceModeUpload" hidden>
+          <div class="upload-drop-card">
+            <span class="upload-icon" aria-hidden="true">↑</span>
+            <h3>완성된 MP4 영상 올리기</h3>
+            <p>최대 100MB까지 가능합니다. 업로드한 영상의 화면과 음성·대사를 Gemini가 분석해 설명과 해시태그를 만듭니다.</p>
+            <label class="file-button upload-file-button">영상 선택<input id="ownVideoFile" type="file" accept="video/mp4,.mp4"></label>
+            <p id="ownVideoFileName" class="selected-file-name">선택된 영상이 없습니다.</p>
+            <button id="uploadOwnVideoButton" class="primary" type="button">업로드하고 문구 만들기</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="result-panel panel-card">
+        <div class="section-title"><span>02 · REVIEW & PUBLISH</span><h2>결과 확인하고 게시하기</h2><p>영상을 확인한 뒤 설명과 해시태그를 자유롭게 고치고 바로 게시하세요.</p></div>
+        <div class="video-shell">
+          <video id="latestVideo" controls playsinline preload="metadata" hidden></video>
+          <div id="videoEmpty" class="video-empty"><span>▶</span><b>아직 생성된 영상이 없습니다</b><small>왼쪽에서 영상을 생성하면 바로 여기에 표시됩니다.</small></div>
+        </div>
+
+        <div class="copy-heading"><div><h3>Instagram 게시 문구</h3><p>완성 영상의 화면과 음성·대사를 분석해 생성합니다.</p></div><button id="generateSocialCopyButton" type="button">영상 다시 분석</button></div>
+        <p id="copyAnalysisStatus" class="copy-analysis-status" role="status" aria-live="polite" hidden></p>
+        <label>영상 설명<textarea id="socialDescription" rows="6" placeholder="예: 오늘 면접 본 줄라이, 과연 어떻게 될까요?"></textarea></label>
+        <label>해시태그<input id="socialHashtags" type="text" placeholder="#줄라이 #시바견 #강아지릴스"></label>
+        <button id="saveSocialCopyButton" type="button">수정 내용 저장</button>
+
+        <div class="publish-box"><div><h3>Instagram Reels</h3><p id="instagramPublicationStatus">연결 및 게시 상태를 확인하고 있습니다.</p></div><button id="instagramPublishButton" class="primary" type="button" disabled>Instagram에 바로 게시</button></div>
+      </article>
+    </section>
+  </main>
+
+  <dialog id="deleteProjectDialog" class="confirm-dialog" aria-labelledby="deleteProjectDialogTitle">
+    <div class="confirm-dialog-body">
+      <span class="confirm-dialog-icon" aria-hidden="true">!</span>
+      <div>
+        <h2 id="deleteProjectDialogTitle">프로젝트를 삭제할까요?</h2>
+        <p id="deleteProjectMessage">선택한 프로젝트와 저장된 영상 파일이 삭제됩니다.</p>
+      </div>
+    </div>
+    <div class="confirm-dialog-actions">
+      <button id="cancelDeleteProjectButton" type="button">취소</button>
+      <button id="confirmDeleteProjectButton" class="danger" type="button">프로젝트 삭제</button>
+    </div>
+  </dialog>
+  <script src="/static/app.js?v=20260901-analysis-feedback"></script>
+</body>
+</html>
